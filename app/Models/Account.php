@@ -14,12 +14,13 @@ class Account extends Model
 
     public $fillable = [
         'name',
-        'category'
+        'category',
+        'balance'
     ];
 
-    protected function category() : Attribute {
-        return Attribute::make(
-            get: fn (string $value) => AccountCategory::fromValue(intval($value))->key,
-        );
-    }
+    // protected function category() : Attribute {
+    //     return Attribute::make(
+    //         get: fn (string $value) => AccountCategory::fromValue(intval($value))->key,
+    //     );
+    // }
 }

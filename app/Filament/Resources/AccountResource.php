@@ -4,16 +4,13 @@ namespace App\Filament\Resources;
 
 use App\Enums\AccountCategory;
 use App\Filament\Resources\AccountResource\Pages;
-use App\Filament\Resources\AccountResource\RelationManagers;
 use App\Models\Account;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Pages\Page;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class AccountResource extends Resource
 {
@@ -40,8 +37,10 @@ class AccountResource extends Resource
 
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make("name")->searchable()->sortable(),
-                Tables\Columns\TextColumn::make("category")->searchable()->sortable(),
+                TextColumn::make("name")->searchable()->sortable(),
+                TextColumn::make("category")
+                ->formatStateUsing(fn(string $state): string => AccountCategory::getKey(intval($state)))
+                ->searchable()->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('category')

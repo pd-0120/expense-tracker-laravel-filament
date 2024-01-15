@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('accounts', function (Blueprint $table) {
+        Schema::create('transaction_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('category')->nullable();
-            $table->double('balance', 10,2)->default(0);
+            $table->foreignId('transaction_category_id')->nullable()->constrained('transaction_categories');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('accounts');
+        Schema::dropIfExists('transaction_categories');
     }
 };
