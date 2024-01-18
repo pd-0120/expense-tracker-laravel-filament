@@ -12,6 +12,7 @@ class TransactionCategory extends Model
     public $fillable = [
         'name',
         'transaction_category_id',
+        'type'
     ];
 
     public function parentcategory() {

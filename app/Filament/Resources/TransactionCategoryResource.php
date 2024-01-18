@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\CategoryType;
 use App\Filament\Resources\TransactionCategoryResource\Pages;
 use App\Filament\Resources\TransactionCategoryResource\RelationManagers;
 use App\Models\TransactionCategory;
@@ -25,6 +26,7 @@ class TransactionCategoryResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')->required()->maxLength(25),
+                Forms\Components\Select::make('type')->label('Category Type')->options(CategoryType::asSelectArray())->required(),
                 Forms\Components\Select::make('transaction_category_id')
                 ->label('Parent Category')
                 ->options(TransactionCategory::whereNull('transaction_category_id')->get()->pluck('name', 'id'))
@@ -37,7 +39,14 @@ class TransactionCategoryResource extends Resource
         return $table
             ->columns([
                 TextColumn::make("name")->searchable()->sortable(),
-                TextColumn::make("ParentCategory.name")->label('Parent Category')
+                TextColumn::make("ParentCategory.name")->label('Parent Category'),
+                TextColumn::make("type")
+                ->formatStateUsing(fn(string $state): string => CategoryType::getKey($state))
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                        CategoryType::Income => 'success',
+                        CategoryType::Expense=> 'danger',
+                })
             ])
             ->filters([
                 //
@@ -45,7 +54,6 @@ class TransactionCategoryResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

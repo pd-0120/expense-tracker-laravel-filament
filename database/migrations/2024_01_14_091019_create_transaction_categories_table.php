@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('transaction_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('type');
             $table->foreignId('transaction_category_id')->nullable()->constrained('transaction_categories');
             $table->timestamps();
         });
