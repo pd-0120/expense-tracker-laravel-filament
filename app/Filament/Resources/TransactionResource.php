@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\TransactionTypeEnum;
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Filament\Resources\TransactionResource\RelationManagers;
 use App\Models\Transaction;
@@ -9,6 +10,9 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -31,19 +35,38 @@ class TransactionResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('date'),
+                TextColumn::make('fromAccont.name'),
+                TextColumn::make('toAccont.name'),
+                TextColumn::make('amount')
+                ->money('AUD')->summarize(Sum::make()),
+                TextColumn::make('type')
+                ->formatStateUsing(fn(string $state): string => TransactionTypeEnum::getKey($state))
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        TransactionTypeEnum::Credit => 'success',
+                        TransactionTypeEnum::Debit => 'danger',
+                        TransactionTypeEnum::Transfer => 'warning',
+                    })
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make(),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->groups([
+                Group::make('date')->collapsible()
+            ])
+            ->defaultSort('date', 'desc');
     }
 
     public static function getRelations(): array

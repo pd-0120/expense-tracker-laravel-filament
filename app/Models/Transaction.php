@@ -19,4 +19,18 @@ class Transaction extends Model
         'date',
         'notes',
     ];
+
+    public function fromAccont() {
+        return $this->belongsTo(Account::class, 'from_account_id');
+    }
+
+    public function toAccont()
+    {
+        return $this->belongsTo(Account::class, 'to_account_id');
+    }
+
+    public function transctionCategory()
+    {
+        return $this->belongsTo(TransactionCategory::class, 'transaction_category_id');
+    }
 }
