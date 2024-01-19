@@ -11,6 +11,7 @@ use Flowframe\Trend\Trend;
 
 class TransactionChart extends ChartWidget
 {
+    protected int|string|array $columnSpan = 'full';
     protected static ?string $heading = 'Income Vs Expense Chart';
     public ?string $filter = "last_year";
     protected static ?string $pollingInterval = null;

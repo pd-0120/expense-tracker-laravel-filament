@@ -17,6 +17,7 @@ class AccountResource extends Resource
 
     protected static ?string $model = Account::class;
     protected static ?string $recordTitleAttribute = 'name';
+
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
 
     public static function form(Form $form): Form
@@ -43,8 +44,7 @@ class AccountResource extends Resource
                 ->searchable()->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('category')
-                    ->options($accountCategories),
+                Tables\Filters\SelectFilter::make('category')->options($accountCategories),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
