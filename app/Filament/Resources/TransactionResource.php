@@ -22,7 +22,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Forms\Components\DatePicker;
 
 
@@ -73,7 +73,11 @@ class TransactionResource extends Resource
                 TextColumn::make('date'),
                 TextColumn::make('fromAccount.name'),
                 TextColumn::make('toAccount.name'),
-                TextColumn::make('amount')->money('AUD')->summarize(Sum::make()),
+                TextColumn::make('amount')->money('AUD')->summarize(Sum::make())->color(fn($record) =>  match($record->type) {
+                    TransactionTypeEnum::Credit => 'success',
+                    TransactionTypeEnum::Debit => 'danger',
+                    TransactionTypeEnum::Transfer => 'warning',
+                }),
                 TextColumn::make('type')
                 ->formatStateUsing(fn(string $state): string => TransactionTypeEnum::getKey($state))
                     ->badge()
@@ -84,7 +88,7 @@ class TransactionResource extends Resource
                     })
             ])
             ->filters([
-                SelectFilter::make('type')->options($transactionTypes)
+                SelectFilter::make('type')->options($transactionTypes),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
