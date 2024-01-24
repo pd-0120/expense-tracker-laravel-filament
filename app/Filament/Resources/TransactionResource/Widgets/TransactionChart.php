@@ -21,6 +21,9 @@ class TransactionChart extends ChartWidget
     protected function getData(): array
     {
         $dateFormate = "%Y-%m";
+        $creditData = [];
+        $debitData = [];
+        $labelData = [];
 
         if(in_array($this->filter, ['today', 'this_week', 'last_week', 'month', 'last_month'])){
             $dateFormate = "%Y-%m-%d";
@@ -29,24 +32,47 @@ class TransactionChart extends ChartWidget
         $raqQuery = DB::raw('date_format(date, "'.$dateFormate.'") as date, sum(if(type = "credit", amount, 0)) as credit, sum(if(type = "debit", amount, 0)) as debit');
 
         $transactions = Transaction::select($raqQuery);
+
         $transactions = $transactions->whereBetween('date', $this->getDateRange())->groupBy('date')->orderBy('date')->get();
+
+        if(in_array($this->filter, ['year', 'last_year'])) {
+            $transactions = $transactions->groupBy('date');
+            foreach($transactions as $key => $transaction) {
+                $labelData[] = $key;
+                $credit = 0;
+                $debit = 0;
+
+                if(count($transaction) > 0) {
+                    foreach($transaction as $tranData) {
+                        $credit = $credit + $tranData->credit;
+                        $debit = $debit + $tranData->debit;
+                    }
+                }
+                $creditData[] = $credit;
+                $debitData[] = $debit;
+            }
+        } else {
+            $creditData = $transactions->map(fn($value) => $value->credit);
+            $debitData = $transactions->map(fn($value) => $value->debit);
+            $labelData = $transactions->map(fn($value) => $value->date);
+        }
 
         return [
             'datasets' => [
                 [
                     'label' => 'Income',
-                    'data' => $transactions->map(fn($value) => $value->credit),
+                    'data' => $creditData,
                     'backgroundColor' => '#79ea86',
                     'borderColor' => '#79ea86',
                 ],
                 [
                     'label' => 'Expense',
-                    'data' => $transactions->map(fn($value) => $value->debit),
+                    'data' => $debitData,
                     'backgroundColor' => '#e75757',
                     'borderColor' => '#e75757',
                 ],
             ],
-            'labels' => $transactions->map(fn($value) => $value->date),
+            'labels' => $labelData,
         ];
     }
 
