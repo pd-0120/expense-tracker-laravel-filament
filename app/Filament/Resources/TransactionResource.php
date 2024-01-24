@@ -5,8 +5,14 @@ namespace App\Filament\Resources;
 use App\Enums\TransactionTypeEnum;
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Filament\Resources\TransactionResource\RelationManagers;
+use App\Models\Account;
 use App\Models\Transaction;
+use App\Models\TransactionCategory;
 use Filament\Forms;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -17,6 +23,8 @@ use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\DatePicker;
+
 
 class TransactionResource extends Resource
 {
@@ -27,11 +35,34 @@ class TransactionResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $accounts = Account::select('id','name')->get()->pluck('name', 'id')->toArray();
+        $types = TransactionTypeEnum::toSelectArray();
+        $transactionCategories = TransactionCategory::with('ChildCategories')->whereNull('transaction_category_id')->get();
+        $categories = [];
+        foreach($transactionCategories as $data) {
+            if(count($data->ChildCategories) > 0) {
+                $categories[$data['name']] = $data->ChildCategories->pluck('name', 'id')->toArray();
+            } else {
+                $categories[$data['name']] = [
+                    $data['id'] => $data['name']
+                ];
+            }
+        }
+
         return $form
             ->schema([
-                //
+                DatePicker::make('date')->required()->native(false)->maxDate(now()->toDateString()),
+                Hidden::make('user_id')->default(auth()->user()->id) ,
+                Select::make('type')->label('Transaction Type')->required()->native(false)->options($types),
+                Select::make('from_account_id')->label('From Account')->native(false)->required()->searchable()->options($accounts),
+                Select::make('to_account_id')->label('To Account')->native(false)->required()->searchable()->options($accounts),
+                Select::make('transaction_category_id')->label('Category')->native(false)->required()->searchable()->options($categories),
+                TextInput::make('amount')->required()->numeric()->minValue(0),
+                RichEditor::make('notes')->maxLength(200),
             ]);
     }
+
+
 
     public static function table(Table $table): Table
     {
