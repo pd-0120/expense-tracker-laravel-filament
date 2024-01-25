@@ -3,10 +3,8 @@
 namespace App\Filament\Resources\TransactionResource\Widgets;
 
 use App\Models\Transaction;
-use Filament\Widgets\ChartWidget;
 use DB;
-use Flowframe\Trend\TrendValue;
-use Flowframe\Trend\Trend;
+use Filament\Widgets\ChartWidget;
 
 
 class TransactionChart extends ChartWidget
